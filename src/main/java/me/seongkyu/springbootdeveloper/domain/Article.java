@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "article")
 @Getter //@모든 필드에 대한 접근자 메서드를 만들 수 있게 됨
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  //@선언해서 기본생성자를 생성했고
 public class Article {
@@ -14,7 +15,6 @@ public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
-
     private Long id;
 
     @Column(name = "title", nullable = false)
@@ -29,8 +29,16 @@ public class Article {
         this.content = content;
     }
 
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+
+    /* protected Article() {
+    }
      //게터
-    /*public Long getId() {   //필드의 값을 가져오는 게터 메서드들 다른 에너테이션으로 대체
+    public Long getId() {   //필드의 값을 가져오는 게터 메서드들 다른 에너테이션으로 대체
         return id;
     }
 
@@ -41,5 +49,7 @@ public class Article {
     public String getContent() {
         return content;
 
-    } */
+    }
+    */
 }
+
