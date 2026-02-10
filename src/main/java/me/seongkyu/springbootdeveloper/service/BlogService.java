@@ -23,7 +23,8 @@ public class BlogService {
     }
 
     public List<Article> findAll() {
-        return blogRepository.findAll();
+        List<Article> articles = blogRepository.findAll();
+        return articles;
     }
 
     public Article findById(long id) {
