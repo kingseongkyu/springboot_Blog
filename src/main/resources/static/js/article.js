@@ -48,6 +48,27 @@ if (modifyButton) {
  });
 }
 
+//등록 기능
+//1. id가 create-btn인 엘리먼트
+const createButton = document.getElementById("create-btn");
+if (createButton) {
+//2. 클릭 이벤트가 감지되면 title, content인 엘리먼트 값을 가져와
+//fetch() 메서드를 통해 생성 API로 POST 요청
+    createButton.addEventListener("click", (event) => {
+      fetch("/api/articles", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: document.getElementById("title").value,
+          content: document.getElementById("content").value,
+        }),
+      }).then(() => {
+        alert("등록 완료되었습니다.");
+      });
+    });
+}
 
 
 

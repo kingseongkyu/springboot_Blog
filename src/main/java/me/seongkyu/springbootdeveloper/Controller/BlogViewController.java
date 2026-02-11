@@ -30,7 +30,6 @@ public class BlogViewController {
         }
         model.addAttribute("articles", articles);   //1. 블로그 글 리스트 저장
                                                 //attribute 메서드를 사용해 모델에 값 저장
-
         return "articleList";   //2. articleList.html라는 뷰 조희
     }
 
