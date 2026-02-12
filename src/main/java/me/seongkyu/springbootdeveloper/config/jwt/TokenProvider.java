@@ -46,7 +46,7 @@ public class TokenProvider {
     }
 
     //2. JWT 토큰 유효성 겁증 메서드
-    public boolean vaildToken(String token) {
+    public boolean validToken(String token) {
         try {
             Jwts.parser()
                     .setSigningKey(jwtProperties.getSecretKey())    //비밀값으로 복호화
@@ -69,7 +69,7 @@ public class TokenProvider {
     }
 
     //4. 토큰 기반으로 유저 ID를 가져오는 메서드
-    public Long getUser(String token) {
+    public Long getUserId(String token) {
         Claims claims = getClaims(token);
         return claims.get("id", Long.class);
     }
