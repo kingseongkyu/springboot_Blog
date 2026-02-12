@@ -30,6 +30,19 @@ logging:
     org.hibernate.SQL: debug
 
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: <<클라이언트 ID>>
+            client-secret: <<비밀번호>>
+            scope:
+              - email
+              - profile
+
+
+
 
 
 
