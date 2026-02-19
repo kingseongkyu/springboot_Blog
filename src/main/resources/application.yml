@@ -1,9 +1,8 @@
+jwt:
+  issuer: ajufresh@gmail.com
+  secret-key: ${JWT_SECRET_KEY}
+
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa  #1.데이터베이스 정보 추가
-
-
 
   jpa:
     #전송 쿼리 확인
@@ -21,25 +20,21 @@ spring:
       enabled: true
       path: /h2-console  #경로 url
 
-jwt:
-  issuer: ajufresh@gmail.com
-  secret_key: study-springboot
-
-logging:
-  level:
-    org.hibernate.SQL: debug
-
-
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: <<클라이언트 ID>>
-            client-secret: <<비밀번호>>
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - email
               - profile
+
+
+  logging:
+    level:
+      org.hibernate.SQL: debug
 
 
 

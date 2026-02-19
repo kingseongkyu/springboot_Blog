@@ -1,26 +1,33 @@
 package me.seongkyu.springbootdeveloper.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.crypto.opts.UserAuthenticationRequired;
 import me.seongkyu.springbootdeveloper.domain.Article;
+import me.seongkyu.springbootdeveloper.domain.User;
 import me.seongkyu.springbootdeveloper.dto.AddArticleRequest;
 import me.seongkyu.springbootdeveloper.dto.UpdateArticleRequest;
 import me.seongkyu.springbootdeveloper.repository.BlogRepository;
+import me.seongkyu.springbootdeveloper.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.xml.transform.Result;
+import java.security.Principal;
 import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -42,6 +49,11 @@ class BlogApiControllerTest {
     @Autowired
     BlogRepository blogRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    User user;
+
     @BeforeEach     //테스트 실행 전 실행하는 메서드
     public void mockMvcSetUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -49,6 +61,19 @@ class BlogApiControllerTest {
         blogRepository.deleteAll();
 
     }
+
+    @BeforeEach
+    void setSecurityContext() {
+        userRepository.deleteAll();
+        user = userRepository.save(User.builder()
+                .email("user@gmail.com")
+                .password("test")
+                .build());
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new UsernamePasswordAuthenticationToken(user,user.getPassword(), user.getAuthorities()));
+    }
+
 
     @DisplayName("addArticle : 블로그 글 추가에 성공한다.")
     @Test
@@ -62,9 +87,12 @@ class BlogApiControllerTest {
         //객체 JSON으로 직렬화
         final String requestBody = objectMapper.writeValueAsString(userRequest);
 
+        Principal principal = Mockito.mock(Principal.class);
+        Mockito.when(principal.getName()).thenReturn("username");
+
         //when
         //설정한 내용을 바탕으로 요청 전송
-        ResultActions result = mockMvc.perform(post(url).contentType(MediaType.APPLICATION_JSON_VALUE).content(requestBody));
+        ResultActions result = mockMvc.perform(post(url).contentType(MediaType.APPLICATION_JSON_VALUE).principal(principal).content(requestBody));
 
         //then
         result.andExpect(status().isCreated());
@@ -82,10 +110,7 @@ class BlogApiControllerTest {
     public void findAllArticles() throws Exception {
         //given
         final String url = "/api/articles";
-        final String title = "title";
-        final String content = "content";
-
-        blogRepository.save(Article.builder().title(title).content(content).build());
+        Article savedArticle = createDefaultArticle();
 
         //when
         final ResultActions resultActions = mockMvc.perform(get(url).accept(MediaType.APPLICATION_JSON));
@@ -93,8 +118,8 @@ class BlogApiControllerTest {
         //then
         resultActions
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].content").value(content))
-                .andExpect(jsonPath("$[0].title").value(title));
+                .andExpect(jsonPath("$[0].content").value(savedArticle.getContent()))
+                .andExpect(jsonPath("$[0].title").value(savedArticle.getTitle()));
 
     }
 
@@ -103,18 +128,16 @@ class BlogApiControllerTest {
     public void findArticle() throws Exception {
         //given
         final String url = "/api/articles/{id}";
-        final String title = "title";
-        final String content = "content";
+        Article savedArticle = createDefaultArticle();
 
-        Article savedArticle = blogRepository.save(Article.builder().title(title).content(content).build());
 
         //when
         final ResultActions resultActions = mockMvc.perform(get(url, savedArticle.getId()));
 
         resultActions
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").value(content))
-                .andExpect(jsonPath("$.title").value(title));
+                .andExpect(jsonPath("$.content").value(savedArticle.getContent()))
+                .andExpect(jsonPath("$.title").value(savedArticle.getTitle()));
     }
 
     @DisplayName("deleteArticle: 블로그 삭제에 성공한다.")
@@ -122,13 +145,11 @@ class BlogApiControllerTest {
     public void deleteArticle() throws Exception {
         //given : 블로그 글을 저장
         final String url = "/api/articles/{id}";
-        final String title = "title";
-        final String content = "content";
+        Article savedArticle = createDefaultArticle();
 
-        Article saveArticle = blogRepository.save(Article.builder().title(title).content(content).build());
 
         //when : 저장한 블로그 글의 id값으로 삭제 API호출
-        mockMvc.perform(delete(url, saveArticle.getId()))
+        mockMvc.perform(delete(url,savedArticle.getId()))
                 .andExpect(status().isOk());
 
         //then : 응답코드 200 Ok, 블로그 글 리스트 전체 조회해서 조회한 배열 크기가 0인지 확인
@@ -142,14 +163,7 @@ class BlogApiControllerTest {
     public void updateArticle() throws Exception {
         //given
         final String url = "/api/articles/{id}";
-        final String title = "title";
-        final String content = "content";
-
-        Article savedArticle = blogRepository.save(Article.builder()
-                .title(title)
-                .content(content)
-                .build());
-
+        Article savedArticle = createDefaultArticle();
         final String newTitle = "new title";
         final String newContent = "new content";
 
@@ -168,6 +182,14 @@ class BlogApiControllerTest {
 
         assertThat(article.getTitle()).isEqualTo(newTitle);
         assertThat(article.getContent()).isEqualTo(newContent);
+    }
+
+    private Article createDefaultArticle() {
+        return blogRepository.save(Article.builder()
+                .title("title")
+                .author(user.getUsername())
+                .content("content")
+                .build());
     }
 
 }

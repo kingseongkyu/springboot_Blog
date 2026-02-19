@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class UserViewController {
     @GetMapping("/login")
     public String login() {
-        return "login";     //login.html 반환
+        return "oauthLogin";     //login.html 반환
     }
 
     @GetMapping("/signup")
