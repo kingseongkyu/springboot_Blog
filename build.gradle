@@ -32,8 +32,14 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api:2.3.1'  //XML 문서와 Java 객체 간 매핑 자동화
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'com.mysql:mysql-connector-j'
+    implementation 'org.springframework.boot::spring-boot-starter-validation'
+    testImplementation 'com.github.javafaker:javafaker:1.0.2'
 }
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    enabled=false   //빌드시에 일반 jar파일만 생성하도록 변경
 }

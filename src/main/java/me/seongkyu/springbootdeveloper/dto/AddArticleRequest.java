@@ -8,6 +8,7 @@ import me.seongkyu.springbootdeveloper.domain.Article;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+//블로그 글 추가 요청
 public class AddArticleRequest {
 
     private String title;
